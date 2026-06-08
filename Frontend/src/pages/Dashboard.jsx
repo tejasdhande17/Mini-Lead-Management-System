@@ -4,14 +4,14 @@ import { TrendingUp, Users, CheckCircle, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardCard = ({ title, value, icon: Icon, color }) => (
-    <div className="card glass-panel border-0 shadow-sm h-100" style={{ color: '#1e293b' }}>
+    <div className="card border shadow-sm h-100">
         <div className="card-body">
             <div className="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 className="text-secondary small text-uppercase mb-2 fw-bold" style={{ fontSize: '0.9rem', trackingSpacing: '1px' }}>{title}</h6>
-                    <h3 className="mb-0 fw-extrabold" style={{ fontSize: '1.8rem' }}>{value}</h3>
+                    <h6 className="text-muted small text-uppercase mb-2" style={{ fontSize: '0.85rem' }}>{title}</h6>
+                    <h3 className="mb-0 fw-bold">{value}</h3>
                 </div>
-                <div className={`p-3 rounded-3 bg-${color} bg-opacity-10 text-${color}`}>
+                <div className={`p-3 rounded bg-${color} bg-opacity-10 text-${color}`}>
                     <Icon size={24} />
                 </div>
             </div>
@@ -44,10 +44,10 @@ const Dashboard = () => {
     return (
         <div>
             <div className="mb-4">
-                <h3 className="fw-extrabold" style={{ color: '#1e293b', fontSize: '1.8rem' }}>
-                    Welcome back, <span className="text-gradient">{user.name}</span>
+                <h3 className="fw-bold text-dark">
+                    Welcome back, {user.name}
                 </h3>
-                <p className="text-secondary" style={{ fontSize: '1.05rem', fontWeight: '500' }}>
+                <p className="text-muted">
                     Here is what's happening with your leads database today.
                 </p>
             </div>
@@ -69,23 +69,22 @@ const Dashboard = () => {
 
             <div className="row g-4">
                 <div className="col-lg-8">
-                    <div className="card glass-panel border-0 shadow-sm p-4" style={{ color: '#1e293b' }}>
-                        <h5 className="fw-bold mb-4" style={{ fontSize: '1.2rem' }}>Activity Overview</h5>
-                        {/* Dynamic status helper */}
-                        <p className="text-secondary" style={{ fontSize: '1.05rem' }}>
+                    <div className="card shadow-sm border p-4 bg-white">
+                        <h5 className="fw-bold mb-3">Activity Overview</h5>
+                        <p className="text-muted mb-0">
                             Lead routing pipeline metrics are synchronized. Active round-robin queue monitors are online.
                         </p>
                     </div>
                 </div>
                 <div className="col-lg-4">
-                    <div className="card glass-panel border-0 shadow-sm p-4" style={{ color: '#1e293b' }}>
-                        <h5 className="fw-bold mb-4" style={{ fontSize: '1.2rem' }}>Pending Actions</h5>
-                        <ul className="list-group list-group-flush bg-transparent">
-                            <li className="list-group-item bg-transparent border-light px-0 py-3 d-flex align-items-center gap-3" style={{ color: '#1e293b' }}>
-                                <div className="p-2 bg-info bg-opacity-10 text-info rounded-circle"><Clock size={16}/></div>
+                    <div className="card shadow-sm border p-4 bg-white">
+                        <h5 className="fw-bold mb-3">Pending Actions</h5>
+                        <ul className="list-group list-group-flush">
+                            <li className="list-group-item px-0 py-2 d-flex align-items-center gap-3 border-0 bg-transparent">
+                                <div className="p-2 bg-info bg-opacity-10 text-info rounded"><Clock size={16}/></div>
                                 <div>
-                                    <p className="mb-0 small fw-bold" style={{ fontSize: '1.05rem' }}>Follow up with John Doe</p>
-                                    <small className="text-secondary">2 hours ago</small>
+                                    <p className="mb-0 fw-semibold text-dark">Follow up with John Doe</p>
+                                    <small className="text-muted">2 hours ago</small>
                                 </div>
                             </li>
                         </ul>

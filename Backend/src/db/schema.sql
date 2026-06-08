@@ -20,10 +20,12 @@ CREATE TABLE IF NOT EXISTS leads (
     source VARCHAR(255),
     status ENUM('New', 'Contacted', 'Qualified', 'Lost', 'Closed') DEFAULT 'New',
     assigned_to INT,
+    created_by INT,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Activity Logs Table

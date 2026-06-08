@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Search, ChevronLeft, ChevronRight, Edit2, Eye, Trash2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const LeadList = () => {
+    const { user } = useAuth();
     const [leads, setLeads] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
     const [filters, setFilters] = useState({ search: '', status: '', source: '' });
@@ -45,10 +47,10 @@ const LeadList = () => {
     };
 
     return (
-        <div className="card glass-panel border-0 shadow-lg" style={{ color: '#1e293b' }}>
+        <div className="card shadow-sm border" style={{ color: '#212529' }}>
             <div className="card-body p-4 p-md-5">
                 <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-                    <h4 className="m-0 fw-extrabold" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Leads Management</h4>
+                    <h4 className="m-0 fw-bold" style={{ color: '#212529' }}>Leads Management</h4>
                     <div className="d-flex gap-2 w-auto">
                         <div className="input-group">
                             <span className="input-group-text bg-white border-end-0 border-opacity-75 border-light" style={{ borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>
@@ -56,25 +58,12 @@ const LeadList = () => {
                             </span>
                             <input 
                                 type="text" 
-                                className="form-control cyber-input border-start-0" 
+                                className="form-control border-start-0" 
                                 placeholder="Search leads..." 
                                 value={filters.search}
                                 onChange={handleSearchChange}
                             />
                         </div>
-                        <select 
-                            className="form-select cyber-input w-auto bg-white border-opacity-75" 
-                            value={filters.status}
-                            onChange={(e) => setFilters({...filters, status: e.target.value})}
-                            style={{ fontSize: '1.05rem', color: '#1e293b', fontWeight: '500' }}
-                        >
-                            <option value="">All Status</option>
-                            <option value="New">New</option>
-                            <option value="Contacted">Contacted</option>
-                            <option value="Qualified">Qualified</option>
-                            <option value="Lost">Lost</option>
-                            <option value="Closed">Closed</option>
-                        </select>
                     </div>
                 </div>
 
@@ -114,8 +103,12 @@ const LeadList = () => {
                                     <td className="text-end">
                                         <div className="btn-group">
                                             <Link to={`/leads/${lead.id}`} className="btn btn-sm btn-outline-primary px-3 py-2"><Eye size={16}/></Link>
-                                            <Link to={`/leads/edit/${lead.id}`} className="btn btn-sm btn-outline-secondary px-3 py-2"><Edit2 size={16}/></Link>
-                                            <button onClick={() => handleDelete(lead.id)} className="btn btn-sm btn-outline-danger px-3 py-2"><Trash2 size={16}/></button>
+                                            {(user?.role === 'Manager' || (user?.role === 'Agent' && lead.assigned_to === user.id)) && (
+                                                <Link to={`/leads/edit/${lead.id}`} className="btn btn-sm btn-outline-secondary px-3 py-2"><Edit2 size={16}/></Link>
+                                            )}
+                                            {user?.role === 'Admin' && (
+                                                <button onClick={() => handleDelete(lead.id)} className="btn btn-sm btn-outline-danger px-3 py-2"><Trash2 size={16}/></button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -131,7 +124,7 @@ const LeadList = () => {
                             <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
                                 <button className="page-link bg-white border border-opacity-50 border-secondary-subtle text-secondary px-3 py-2 rounded-3" onClick={() => setPagination({...pagination, page: pagination.page - 1})}><ChevronLeft size={18}/></button>
                             </li>
-                            <li className="page-item active"><span className="page-link btn-gradient border-0 text-white px-3 py-2 rounded-3" style={{ fontSize: '1.05rem' }}>{pagination.page}</span></li>
+                            <li className="page-item active"><span className="page-link bg-primary border-0 text-white px-3 py-2 rounded-3" style={{ fontSize: '1.05rem' }}>{pagination.page}</span></li>
                             <li className={`page-item ${pagination.page >= pagination.pages ? 'disabled' : ''}`}>
                                 <button className="page-link bg-white border border-opacity-50 border-secondary-subtle text-secondary px-3 py-2 rounded-3" onClick={() => setPagination({...pagination, page: pagination.page + 1})}><ChevronRight size={18}/></button>
                             </li>

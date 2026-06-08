@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import axios from 'axios';
+import { User, Mail, Lock, Shield, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 
-const Login = () => {
+const Register = () => {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('Agent');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
         setLoading(true);
+
         try {
-            await login(email, password);
-            navigate('/dashboard');
+            const res = await axios.post('http://localhost:5000/api/auth/register', {
+                name,
+                email,
+                password,
+                role
+            });
+
+            if (res.data.success) {
+                setSuccess('Registration successful! Redirecting to login page...');
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            }
         } catch (err) {
             if (!err.response) {
-                setError('Cannot connect to API server. Please ensure the backend is running at http://localhost:5000 and your MySQL database is online.');
+                setError('Cannot connect to API server. Please ensure the backend is running at http://localhost:5000.');
             } else {
-                setError(err.response.data?.message || 'Invalid email or password.');
+                setError(err.response.data?.message || 'Registration failed. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -41,7 +56,7 @@ const Login = () => {
                                 LeadFlow
                             </h2>
                             <p className="text-muted small">
-                                Lead Management System
+                                Create a New Account
                             </p>
                         </div>
 
@@ -49,7 +64,7 @@ const Login = () => {
                         <div className="card shadow-sm border p-4 bg-white">
                             <div className="card-body p-0">
                                 <h5 className="fw-bold mb-4 text-center">
-                                    Sign In
+                                    Register
                                 </h5>
 
                                 {error && (
@@ -59,7 +74,31 @@ const Login = () => {
                                     </div>
                                 )}
 
+                                {success && (
+                                    <div className="alert alert-success d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
+                                        <CheckCircle size={18} className="flex-shrink-0" />
+                                        <span>{success}</span>
+                                    </div>
+                                )}
+
                                 <form onSubmit={handleSubmit}>
+                                    <div className="mb-3">
+                                        <label className="form-label mb-1">Full Name</label>
+                                        <div className="input-group">
+                                            <span className="input-group-text bg-light border-end-0">
+                                                <User size={18} className="text-muted" />
+                                            </span>
+                                            <input 
+                                                type="text" 
+                                                className="form-control border-start-0" 
+                                                required 
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                placeholder="John Doe"
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div className="mb-3">
                                         <label className="form-label mb-1">Email Address</label>
                                         <div className="input-group">
@@ -72,11 +111,12 @@ const Login = () => {
                                                 required 
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="admin@example.com"
+                                                placeholder="john@example.com"
                                             />
                                         </div>
                                     </div>
-                                    <div className="mb-4">
+
+                                    <div className="mb-3">
                                         <label className="form-label mb-1">Password</label>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
@@ -92,6 +132,24 @@ const Login = () => {
                                             />
                                         </div>
                                     </div>
+
+                                    <div className="mb-4">
+                                        <label className="form-label mb-1">Account Role</label>
+                                        <div className="input-group">
+                                            <span className="input-group-text bg-light border-end-0">
+                                                <Shield size={18} className="text-muted" />
+                                            </span>
+                                            <select
+                                                className="form-select border-start-0"
+                                                value={role}
+                                                onChange={(e) => setRole(e.target.value)}
+                                            >
+                                                <option value="Agent">Agent</option>
+                                                <option value="Manager">Manager</option>
+                                                <option value="Admin">Admin</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     
                                     <button 
                                         type="submit" 
@@ -101,21 +159,20 @@ const Login = () => {
                                         {loading ? (
                                             <>
                                                 <div className="spinner-border spinner-border-sm text-light" role="status"></div>
-                                                <span>Signing in...</span>
+                                                <span>Registering...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <span>Sign In</span>
+                                                <span>Register Account</span>
                                                 <ArrowRight size={18} />
                                             </>
                                         )}
                                     </button>
                                 </form>
 
-                                {/* Link to Register */}
                                 <div className="mt-4 pt-3 border-top text-center">
                                     <p className="text-muted small mb-0">
-                                        Don't have an account? <Link to="/register" className="text-primary fw-bold text-decoration-none">Register here</Link>
+                                        Already have an account? <Link to="/login" className="text-primary fw-bold text-decoration-none">Sign In</Link>
                                     </p>
                                 </div>
 
@@ -129,4 +186,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Register;

@@ -1,39 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Save, X, Phone, Mail, User, Info, MessageSquare } from 'lucide-react';
+import { Save, X, Phone, Mail, User, Shield, MessageSquare, Info } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const LeadForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [agents, setAgents] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
         source: 'Website',
         status: 'New',
-        notes: ''
+        notes: '',
+        assigned_to: ''
     });
 
     useEffect(() => {
         if (id) {
             const fetchLead = async () => {
-                const res = await axios.get(`http://localhost:5000/api/leads/${id}`);
-                setFormData(res.data);
+                try {
+                    const res = await axios.get(`http://localhost:5000/api/leads/${id}`);
+                    setFormData({
+                        name: res.data.name || '',
+                        email: res.data.email || '',
+                        phone: res.data.phone || '',
+                        source: res.data.source || 'Website',
+                        status: res.data.status || 'New',
+                        notes: res.data.notes || '',
+                        assigned_to: res.data.assigned_to || ''
+                    });
+                } catch (error) {
+                    console.error('Error fetching lead:', error);
+                }
             };
             fetchLead();
         }
-    }, [id]);
+
+        if (user?.role === 'Manager') {
+            const fetchAgents = async () => {
+                try {
+                    const res = await axios.get('http://localhost:5000/api/users/agents');
+                    setAgents(res.data);
+                } catch (error) {
+                    console.error('Error fetching agents:', error);
+                }
+            };
+            fetchAgents();
+        }
+    }, [id, user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            if (id) {
-                await axios.put(`http://localhost:5000/api/leads/${id}`, formData);
+            let payload = { ...formData };
+            // Agents can only submit status changes
+            if (user?.role === 'Agent') {
+                payload = { status: formData.status };
             } else {
-                await axios.post('http://localhost:5000/api/leads', formData);
+                // If assigned_to is empty string, make it null
+                if (payload.assigned_to === '') {
+                    payload.assigned_to = null;
+                }
+            }
+
+            if (id) {
+                await axios.put(`http://localhost:5000/api/leads/${id}`, payload);
+            } else {
+                await axios.post('http://localhost:5000/api/leads', payload);
             }
             navigate('/leads');
         } catch (error) {
@@ -46,8 +85,8 @@ const LeadForm = () => {
     return (
         <div className="row justify-content-center">
             <div className="col-lg-8">
-                <div className="card border-0 shadow-sm">
-                    <div className="card-header bg-white border-0 py-3">
+                <div className="card border shadow-sm">
+                    <div className="card-header bg-white border-bottom py-3">
                         <h4 className="m-0 fw-bold">{id ? 'Edit Lead' : 'Create New Lead'}</h4>
                     </div>
                     <div className="card-body p-4">
@@ -60,6 +99,7 @@ const LeadForm = () => {
                                         <input 
                                             type="text" className="form-control" required
                                             value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                            disabled={user?.role === 'Agent'}
                                         />
                                     </div>
                                 </div>
@@ -70,6 +110,7 @@ const LeadForm = () => {
                                         <input 
                                             type="email" className="form-control" required
                                             value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                            disabled={user?.role === 'Agent'}
                                         />
                                     </div>
                                 </div>
@@ -80,6 +121,7 @@ const LeadForm = () => {
                                         <input 
                                             type="text" className="form-control" required
                                             value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                            disabled={user?.role === 'Agent'}
                                         />
                                     </div>
                                 </div>
@@ -88,6 +130,7 @@ const LeadForm = () => {
                                     <select 
                                         className="form-select bg-light"
                                         value={formData.source} onChange={(e) => setFormData({...formData, source: e.target.value})}
+                                        disabled={user?.role === 'Agent'}
                                     >
                                         <option value="Website">Website</option>
                                         <option value="Referral">Referral</option>
@@ -110,6 +153,26 @@ const LeadForm = () => {
                                         </select>
                                     </div>
                                 )}
+                                {user?.role === 'Manager' && (
+                                    <div className="col-md-6">
+                                        <label className="form-label small fw-bold">Assigned Agent</label>
+                                        <div className="input-group">
+                                            <span className="input-group-text bg-light"><Shield size={18} className="text-muted"/></span>
+                                            <select 
+                                                className="form-select bg-light"
+                                                value={formData.assigned_to || ''} 
+                                                onChange={(e) => setFormData({...formData, assigned_to: e.target.value})}
+                                            >
+                                                <option value="">Unassigned (Round-Robin Auto Assign)</option>
+                                                {agents.map(agent => (
+                                                    <option key={agent.id} value={agent.id}>
+                                                        {agent.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="col-12">
                                     <label className="form-label small fw-bold">Internal Notes</label>
                                     <div className="input-group">
@@ -117,6 +180,7 @@ const LeadForm = () => {
                                         <textarea 
                                             className="form-control" rows="4"
                                             value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                                            disabled={user?.role === 'Agent'}
                                         ></textarea>
                                     </div>
                                 </div>

@@ -10,6 +10,8 @@ const register = async (req, res) => {
     const { name, email, password, role } = req.body;
 
     try {
+        // Registration now allows any role (Admin, Manager, Agent) for demonstration purposes
+
         const [existing] = await db.query(
             'SELECT * FROM users WHERE email = ?',
             [email]

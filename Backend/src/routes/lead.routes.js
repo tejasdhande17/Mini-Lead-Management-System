@@ -5,10 +5,10 @@ const router = express.Router();
 
 router.use(protect); // All lead routes are protected
 
-router.post('/', authorize('Admin', 'Manager'), createLead);
+router.post('/', authorize('Manager'), createLead);
 router.get('/', getLeads);
 router.get('/:id', getLeadById);
-router.put('/:id', authorize('Admin', 'Manager', 'Agent'), updateLead);
-router.delete('/:id', authorize('Admin', 'Manager'), deleteLead);
+router.put('/:id', authorize('Manager', 'Agent'), updateLead);
+router.delete('/:id', authorize('Admin'), deleteLead);
 
 module.exports = router;

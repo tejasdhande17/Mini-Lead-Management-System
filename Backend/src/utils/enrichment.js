@@ -6,7 +6,8 @@ const axios = require('axios');
  */
 const enrichLeadData = async () => {
     try {
-        const response = await axios.get('https://randomuser.me/api/');
+        const apiUrl = process.env.ENRICHMENT_API_URL || 'https://randomuser.me/api/';
+        const response = await axios.get(apiUrl);
         const user = response.data.results[0];
         return {
             location: `${user.location.city}, ${user.location.country}`,

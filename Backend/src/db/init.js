@@ -25,7 +25,14 @@ const initDb = async () => {
 
     console.log('Creating database and tables...');
     for (const statement of statements) {
-        await connection.query(statement);
+        try {
+            await connection.query(statement);
+        } catch (err) {
+            // Ignore duplicate index and duplicate table errors
+            if (err.code !== 'ER_DUP_KEYNAME' && err.code !== 'ER_TABLE_EXISTS_ERROR') {
+                throw err;
+            }
+        }
     }
     console.log('Schema imported successfully.');
 

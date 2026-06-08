@@ -3,16 +3,8 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Default pre-authenticated mock user to bypass login blocks and prevent UI crashes
-const defaultUser = {
-  id: 999,
-  name: 'Demo Admin (Bypassed)',
-  email: 'admin@example.com',
-  role: 'Admin'
-};
-
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(defaultUser);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +14,7 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
-      setUser(defaultUser);
+      setUser(null);
     }
     setLoading(false);
   }, []);
@@ -42,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     delete axios.defaults.headers.common['Authorization'];
-    setUser(defaultUser); // Set back to default mock session instead of crashing
+    setUser(null);
   };
 
   return (
