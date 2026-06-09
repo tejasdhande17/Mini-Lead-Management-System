@@ -102,15 +102,11 @@ const updateLead = async (req, res) => {
         if (leads.length === 0) return res.status(404).json({ message: 'Lead not found' });
         const lead = leads[0];
 
-        if (req.user.role === 'Admin') {
-            return res.status(403).json({ message: 'Admins are not authorized to update leads' });
-        }
+        // Admins are allowed to update any lead fields
+        // No restriction for Admin role
 
-        if (req.user.role === 'Manager') {
-            if (lead.created_by !== req.user.id) {
-                return res.status(403).json({ message: 'You are not authorized to update this lead' });
-            }
-        }
+        // Managers are allowed to update any lead fields
+        // No restriction for Manager role
 
         if (req.user.role === 'Agent') {
             if (lead.assigned_to !== req.user.id) {
@@ -160,6 +156,22 @@ const deleteLead = async (req, res) => {
     const { id } = req.params;
 
     try {
+        // Role based deletion rules
+        const [leads] = await db.query('SELECT * FROM leads WHERE id = ?', [id]);
+        if (leads.length === 0) return res.status(404).json({ message: 'Lead not found' });
+        const lead = leads[0];
+
+        // Role‑based deletion rules
+        if (req.user.role === 'Admin' || req.user.role === 'Manager') {
+            // Admins and Managers can delete any lead
+        } else if (req.user.role === 'Agent') {
+            // Agents can only delete leads assigned to them
+            if (lead.assigned_to !== req.user.id) {
+                return res.status(403).json({ message: 'Agents can only delete leads assigned to them' });
+            }
+        } else {
+            return res.status(403).json({ message: 'You are not authorized to delete leads' });
+        }
         await db.query('DELETE FROM leads WHERE id = ?', [id]);
         res.json({ message: 'Lead deleted successfully' });
     } catch (error) {
