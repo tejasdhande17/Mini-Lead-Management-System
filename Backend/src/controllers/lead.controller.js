@@ -66,11 +66,7 @@ const getLeads = async (req, res) => {
             params.push(req.user.id);
         }
 
-        // Role-based filtering: Managers only see leads created by them
-        if (req.user.role === 'Manager') {
-            query += ' AND l.created_by = ?';
-            params.push(req.user.id);
-        }
+        // Admins and Managers can view all leads (no additional filter)
 
         const [totalRows] = await db.query(query.replace('l.*, u.name as agent_name', 'COUNT(*) as count'), params);
         
@@ -194,9 +190,7 @@ const getLeadById = async (req, res) => {
         if (req.user.role === 'Agent' && lead.assigned_to !== req.user.id) {
             return res.status(403).json({ message: 'You are not authorized to view this lead' });
         }
-        if (req.user.role === 'Manager' && lead.created_by !== req.user.id) {
-            return res.status(403).json({ message: 'You are not authorized to view this lead' });
-        }
+        // Admins and Managers can view any lead (no restriction)
 
         const [logs] = await db.query(
             'SELECT al.*, u.name as user_name FROM activity_logs al LEFT JOIN users u ON al.user_id = u.id WHERE al.lead_id = ? ORDER BY al.created_at DESC',
