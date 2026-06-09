@@ -22,10 +22,13 @@ const protect = async (req, res, next) => {
 };
 
 const authorize = (...roles) => {
+    // Normalize allowed roles (capitalize first letter, lowercase rest)
+    const normalizedRoles = roles.map(r => r.charAt(0).toUpperCase() + r.slice(1).toLowerCase());
     return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            return res.status(403).json({ 
-                message: `User role ${req.user.role} is not authorized to access this route` 
+        const userRole = req.user && req.user.role ? req.user.role.charAt(0).toUpperCase() + req.user.role.slice(1).toLowerCase() : '';
+        if (!normalizedRoles.includes(userRole)) {
+            return res.status(403).json({
+                message: `User role ${req.user.role} is not authorized to access this route`
             });
         }
         next();
